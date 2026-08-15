@@ -1,0 +1,12 @@
+[Unit]
+Description=Disable EEE on eno2
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/ethtool --set-eee eno2 eee off
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

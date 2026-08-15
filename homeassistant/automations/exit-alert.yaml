@@ -1,0 +1,95 @@
+# ===========================================================================
+#  Тревога: человек в зоне выхода (калитка)
+#
+#  Целевое событие: человек с деменцией выходит за пределы участка.
+#  Требование: уведомление за секунды, оба канала, обход беззвучного режима.
+#
+#  Установка: скопировать в automations.yaml Home Assistant
+#  (или подключить как отдельный файл через packages).
+#  Значения ИМЯ_КАМЕРЫ / chat_id / имя устройства подставить свои.
+# ===========================================================================
+
+- id: alert_person_at_exit
+  alias: "Тревога: человек в зоне выхода"
+  description: >-
+    Триггер по событию MQTT от Frigate, а не по сущности: событие приходит
+    в момент входа в зону, без задержки на обновление состояния.
+  mode: single
+
+  # Антидребезг: одна тревога в минуту. Без этого человек, топчущийся
+  # у калитки, генерирует поток уведомлений.
+  max_exceeded: silent
+
+  trigger:
+    - platform: mqtt
+      topic: frigate/events
+
+  condition:
+    # Только люди. Кошки и машины сюда не относятся.
+    - condition: template
+      value_template: >-
+        {{ trigger.payload_json['after']['label'] == 'person' }}
+
+    # Только дворовая камера.
+    - condition: template
+      value_template: >-
+        {{ trigger.payload_json['after']['camera'] == 'ИМЯ_КАМЕРЫ' }}
+
+    # ⚠️ map('lower') ОБЯЗАТЕЛЕН.
+    # В конфиге Frigate зона называется `Exit` с большой буквы, сравнение
+    # в Jinja регистрозависимое. Без приведения к нижнему регистру условие
+    # никогда не станет истинным — молча, без ошибки в логах.
+    - condition: template
+      value_template: >-
+        {{ 'exit' in trigger.payload_json['after']['entered_zones']
+           | map('lower') | list }}
+
+    # Только на входе в зону, не на каждом обновлении трека.
+    - condition: template
+      value_template: >-
+        {{ 'exit' not in (trigger.payload_json['before']['entered_zones']
+           | default([]) | map('lower') | list) }}
+
+  variables:
+    event_id: "{{ trigger.payload_json['after']['id'] }}"
+    who: >-
+      {{ trigger.payload_json['after']['sub_label'] | default('Неизвестный', true) }}
+    snapshot_url: >-
+      http://FRIGATE_HOST:5000/api/events/{{ trigger.payload_json['after']['id'] }}/snapshot.jpg
+
+  action:
+    # --- Канал 1: Telegram, с кадром ---------------------------------------
+    - action: telegram_bot.send_photo
+      data:
+        # ⚠️ chat_id, НЕ target. Параметра target в этом действии нет.
+        chat_id: !secret telegram_chat_id_primary
+        url: "{{ snapshot_url }}"
+        caption: >-
+          ⚠️ {{ who }} в зоне выхода
+          ({{ now().strftime('%H:%M') }})
+
+    - action: telegram_bot.send_photo
+      data:
+        chat_id: !secret telegram_chat_id_secondary
+        url: "{{ snapshot_url }}"
+        caption: >-
+          ⚠️ {{ who }} в зоне выхода
+          ({{ now().strftime('%H:%M') }})
+
+    # --- Канал 2: push мимо беззвучного режима ------------------------------
+    - action: notify.mobile_app_ИМЯ_УСТРОЙСТВА
+      data:
+        title: "⚠️ Человек в зоне выхода"
+        message: "{{ who }} — {{ now().strftime('%H:%M') }}"
+        data:
+          ttl: 0
+          priority: high
+          # ⚠️ alarm_stream, НЕ alarm_stream_max.
+          # alarm_stream_max — это значение поля media_stream для TTS,
+          # а не канал уведомления.
+          channel: alarm_stream
+          image: "{{ snapshot_url }}"
+          actions:
+            - action: "URI"
+              title: "Открыть камеру"
+              uri: "/lovelace/cameras"

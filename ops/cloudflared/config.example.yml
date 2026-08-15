@@ -1,0 +1,32 @@
+# ===========================================================================
+#  Cloudflare Tunnel — доступ к интерфейсам снаружи.
+#
+#  Порты на роутере НЕ пробрасываются. Туннель устанавливает исходящее
+#  соединение изнутри дома. Наружу доступен интерфейс, не видеопоток.
+#
+#  Установка:
+#      cloudflared tunnel login
+#      cloudflared tunnel create home
+#      cloudflared tunnel route dns home ha.example.net
+#      sudo cp config.example.yml /etc/cloudflared/config.yml   # заполнив
+#      sudo cloudflared service install
+# ===========================================================================
+
+# UUID туннеля — выдаётся при `cloudflared tunnel create`
+tunnel: 00000000-0000-0000-0000-000000000000
+credentials-file: /etc/cloudflared/00000000-0000-0000-0000-000000000000.json
+
+ingress:
+  # --- Home Assistant ------------------------------------------------------
+  - hostname: ha.example.net
+    service: http://10.0.0.X:8123
+
+  # --- Frigate -------------------------------------------------------------
+  # ⚠️ Frigate НЕ имеет собственной аутентификации в базовой конфигурации.
+  # Не выставляй наружу без Cloudflare Access поверх — иначе видео из дома
+  # доступно всем, кто знает адрес.
+  - hostname: frigate.example.net
+    service: http://127.0.0.1:5000
+
+  # Обязательное правило-заглушка в конце
+  - service: http_status:404

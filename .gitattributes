@@ -1,0 +1,17 @@
+# Нормализация переводов строк
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Бинарники
+*.png binary
+*.jpg binary
+*.onnx binary
+*.pt binary
+
+# linguist: документация и конфиги не должны определять "язык репозитория"
+docs/**       linguist-documentation
+*.md          linguist-documentation
+frigate/*.yaml linguist-language=YAML

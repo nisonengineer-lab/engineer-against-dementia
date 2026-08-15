@@ -1,0 +1,32 @@
+# ===========================================================================
+#  Home Assistant — фрагменты конфигурации, относящиеся к этому проекту.
+#  Это не полный configuration.yaml, а то, что нужно добавить.
+# ===========================================================================
+
+# --- Доступ снаружи через Cloudflare Tunnel --------------------------------
+# Без trusted_proxies HA видит все запросы как приходящие от прокси
+# и ломает аутентификацию.
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - !secret trusted_proxy_host
+
+# --- Telegram-бот ----------------------------------------------------------
+telegram_bot:
+  - platform: polling
+    api_key: !secret telegram_bot_token
+    allowed_chat_ids:
+      - !secret telegram_chat_id_primary
+      - !secret telegram_chat_id_secondary
+
+# --- Счётчики для ночной логики --------------------------------------------
+counter:
+  night_bed_exits:
+    name: "Выходы из кровати за ночь"
+    initial: 0
+    step: 1
+
+# --- Автоматизации отдельными файлами --------------------------------------
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml

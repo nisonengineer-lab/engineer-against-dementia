@@ -1,0 +1,35 @@
+# ===========================================================================
+#  Автозапуск VM с Home Assistant OS в headless-режиме.
+#
+#  ⚠️ User= ОБЯЗАТЕЛЕН и должен совпадать с владельцем VM.
+#  VirtualBox хранит машины в профиле пользователя; из-под root
+#  `VBoxManage` их не увидит, и юнит будет молча падать.
+#
+#  Установка:
+#      sudo cp homeassistant-vm.service /etc/systemd/system/
+#      # заменить YOUR_USERNAME и имя VM
+#      sudo systemctl daemon-reload
+#      sudo systemctl enable --now homeassistant-vm.service
+# ===========================================================================
+
+[Unit]
+Description=Home Assistant OS (VirtualBox, headless)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+
+ExecStart=/usr/bin/VBoxManage startvm homeassistant --type headless
+ExecStop=/usr/bin/VBoxManage controlvm homeassistant acpipowerbutton
+
+# ACPI-выключению нужно время на корректное завершение
+TimeoutStopSec=120
+
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

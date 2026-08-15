@@ -1,0 +1,47 @@
+# ===========================================================================
+#  Frigate NVR — запуск на хосте с NVIDIA GPU
+#
+#  Перед первым запуском:
+#      cp .env.example .env          и заполнить
+#      cp config.example.yaml config.yaml
+#      docker compose up -d
+# ===========================================================================
+
+services:
+  frigate:
+    container_name: frigate
+    image: ghcr.io/blakeblackshear/frigate:stable-tensorrt
+    restart: unless-stopped
+
+    # Сегмент разделяемой памяти под кадры. Считается от разрешения и числа
+    # камер: слишком мало -> контейнер падает с "Bus error".
+    # https://docs.frigate.video/frigate/installation#calculating-required-shm-size
+    shm_size: "334mb"
+
+    env_file:
+      - .env
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+    volumes:
+      - ./config:/config
+
+      # ВНИМАНИЕ. Этот том обязателен. База лиц и записи лежат в
+      # /media/frigate внутри контейнера. Без внешнего тома всё содержимое
+      # умирает вместе с контейнером при docker compose down/up.
+      # На этом проекте так уже один раз потеряли 500+ обучающих фото лиц.
+      - ./media:/media/frigate
+
+      - /etc/localtime:/etc/localtime:ro
+
+    ports:
+      - "5000:5000"     # веб-интерфейс
+      - "8554:8554"     # RTSP-рестрим (go2rtc)
+      - "8555:8555/tcp" # WebRTC
+      - "8555:8555/udp" # WebRTC

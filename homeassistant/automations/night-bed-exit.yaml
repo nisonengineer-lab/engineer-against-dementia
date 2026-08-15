@@ -1,0 +1,99 @@
+# ===========================================================================
+#  Ночной выход из кровати
+#
+#  Контекст: для человека с шизофренией нарушение ночного сна — ранний
+#  признак ухудшения состояния, заметный задолго до того, как это станет
+#  видно в разговоре.
+#
+#  Поэтому логика здесь ДРУГАЯ, чем у тревоги на калитке:
+#  единичный выход в туалет — норма и будить никого не должен.
+#  Значение имеет ПОВТОРЯЕМОСТЬ за ночь.
+#
+#  СТАТУС: рабочая заготовка. Порог (3 выхода) взят как разумная отправная
+#  точка и подлежит калибровке на реальных данных — см. docs/ru/09-roadmap.md,
+#  накопление паттернов «обычно / необычно».
+# ===========================================================================
+
+- id: night_bed_exit_counter
+  alias: "Ночь: выход из кровати (счётчик)"
+  description: >-
+    Тихо считает выходы из зоны кровати ночью. Уведомления не шлёт.
+  mode: queued
+  max: 10
+
+  trigger:
+    - platform: mqtt
+      topic: frigate/events
+
+  condition:
+    - condition: template
+      value_template: >-
+        {{ trigger.payload_json['after']['label'] == 'person' }}
+    - condition: template
+      value_template: >-
+        {{ trigger.payload_json['after']['camera'] == 'ИМЯ_КАМЕРЫ' }}
+    # Человек ПОКИНУЛ зону кровати
+    - condition: template
+      value_template: >-
+        {{ 'bed' in (trigger.payload_json['before']['entered_zones']
+           | default([]) | map('lower') | list)
+           and 'bed' not in (trigger.payload_json['after']['entered_zones']
+           | default([]) | map('lower') | list) }}
+    # Только ночное окно
+    - condition: time
+      after: "23:00:00"
+      before: "06:00:00"
+
+  action:
+    - action: counter.increment
+      target:
+        entity_id: counter.night_bed_exits
+
+
+- id: night_bed_exit_alert
+  alias: "Ночь: аномальная активность"
+  description: >-
+    Уведомление только при повторяющихся выходах. Единичный выход в туалет
+    — норма, будить из-за него никого не нужно.
+  mode: single
+
+  trigger:
+    - platform: numeric_state
+      entity_id: counter.night_bed_exits
+      above: 2
+
+  condition:
+    - condition: time
+      after: "23:00:00"
+      before: "06:00:00"
+
+  action:
+    - action: telegram_bot.send_message
+      data:
+        chat_id: !secret telegram_chat_id_primary
+        message: >-
+          🌙 Беспокойная ночь: выходов из кровати —
+          {{ states('counter.night_bed_exits') }}
+          (с 23:00, сейчас {{ now().strftime('%H:%M') }})
+
+
+- id: night_bed_exit_reset
+  alias: "Ночь: сброс счётчика утром"
+  mode: single
+  trigger:
+    - platform: time
+      at: "06:00:00"
+  action:
+    - action: counter.reset
+      target:
+        entity_id: counter.night_bed_exits
+
+
+# ---------------------------------------------------------------------------
+#  Требуется в configuration.yaml:
+#
+#  counter:
+#    night_bed_exits:
+#      initial: 0
+#      step: 1
+# ---------------------------------------------------------------------------
