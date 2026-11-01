@@ -1,0 +1,18 @@
+/* Демо-журнал: плашка сверху и всё, что в демо не нужно. */
+.demobar{background:rgba(240,168,104,.10);border-block-end:1px solid rgba(240,168,104,.32);
+  color:var(--ink);font-size:14px;line-height:1.45}
+.demobar__in{display:flex;align-items:center;gap:12px;padding-block:9px}
+.demobar__tag{flex:none;font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:#1A1409;background:var(--accent);
+  border-radius:5px;padding:2px 7px}
+.demobar__t{margin:0;color:var(--ink-2)}
+@media (max-width:640px){
+  .demobar__in{padding-inline:16px;align-items:flex-start}
+  .demobar__t{font-size:13px}
+}
+
+/* Демо только для чтения: оценка, переоценка, удаление, вход и выход
+   спрятаны. JS их и не рисует; это подстраховка. */
+.is-demo .acts, .is-demo .confirm, .is-demo .toast,
+.is-demo #signin, .is-demo #signin2, .is-demo #signout,
+.is-demo .lockbar, .is-demo #auth{display:none !important}

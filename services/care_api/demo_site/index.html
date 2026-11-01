@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo journal — BeKavod</title>
+<meta name="description" content="BeKavod demo journal: a small hand-picked set of real events, translated to English. Read-only.">
+<meta name="theme-color" content="#12100E">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:,">
+
+<!-- Демо-копия журнала. API демо живёт по /demo/api/..., JS склеивает
+     BASE + '/api/...'. -->
+<meta name="api-base" content="/demo">
+<meta name="app-version" content="1.7.2-demo">
+
+<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/journal.css?v=11">
+<link rel="stylesheet" href="css/fault.css?v=2">
+<link rel="stylesheet" href="css/demo.css?v=1">
+</head>
+<body class="jrn-page is-demo">
+
+<!-- Плашка демо: видна всегда. -->
+<div class="demobar" role="note">
+  <div class="wrap demobar__in">
+    <span class="demobar__tag">Demo</span>
+    <p class="demobar__t">Demo journal — a small hand-picked set of real events, translated to English. Read-only.</p>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="wrap topbar__in">
+    <a class="brand" href="https://engineeragainstdementia.net/">
+      <span class="brand__mark">Be<span>Kavod</span></span>
+      <span class="brand__tag">demo journal</span>
+    </a>
+
+    <nav class="topbar__nav" aria-label="Sections">
+      <a href="https://engineeragainstdementia.net/#how" data-sec>How it works</a>
+      <a href="https://engineeragainstdementia.net/#privacy" data-sec>Privacy</a>
+      <a href="./" aria-current="page">Journal</a>
+      <a href="https://engineeragainstdementia.net/status/">Status</a>
+    </nav>
+
+    <div class="topbar__auth">
+      <span class="who" hidden>
+        <span class="who__dot" aria-hidden="true"></span>
+        <span class="who__name">—</span>
+      </span>
+      <!-- В демо входа нет: кнопки остаются в разметке для JS, но скрыты. -->
+      <button class="btn btn--ghost btn--sm" id="signin" type="button" hidden>Sign in</button>
+      <button class="btn btn--ghost btn--sm" id="signout" type="button" hidden>Sign out</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap jrn">
+
+  <!-- Полоса состояния: видна только гостю -->
+  <div class="lockbar" id="lockbar" hidden>
+    <svg class="lockbar__i" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round"/>
+      <rect x="4.5" y="10" width="15" height="10.5" rx="2.6" fill="currentColor" opacity=".9"/>
+    </svg>
+    <p class="lockbar__t">
+      <b>The journal is locked.</b>
+      Frames and recordings, the model's reasoning, search and ratings are
+      visible only to the owner of the system. Below is what an outsider sees:
+      when, what kind of entry it was, and its tags.
+    </p>
+    <button class="btn btn--primary btn--sm" id="signin2" type="button" hidden>Sign in</button>
+  </div>
+
+  <section class="now" id="now" hidden aria-live="polite"></section>
+
+  <header class="jrn__head">
+    <h1>Event journal</h1>
+    <p class="jrn__sub">Newest entries first. <span id="counter">—</span></p>
+  </header>
+
+  <!-- ---------- поиск и фильтры ---------- -->
+  <section class="filters" id="filters" aria-label="Search the journal">
+    <div class="filters__row">
+      <label class="fld fld--grow">
+        <span class="fld__l">Search</span>
+        <input type="search" id="q" placeholder="gate, night, medication…" autocomplete="off">
+      </label>
+      <label class="fld">
+        <span class="fld__l">From</span>
+        <input type="date" id="from">
+      </label>
+      <label class="fld">
+        <span class="fld__l">To</span>
+        <input type="date" id="to">
+      </label>
+      <button class="btn btn--ghost btn--sm" id="reset" type="button">Reset</button>
+    </div>
+
+    <div class="filters__row filters__row--chips">
+      <span class="fld__l">Entry type</span>
+      <div class="chipset" id="kinds" role="group" aria-label="Entry type"></div>
+    </div>
+
+    <div class="filters__veil" aria-hidden="true">
+      <span>Search and filters — after signing in</span>
+    </div>
+  </section>
+
+  <div id="fault" hidden></div>
+
+  <!-- ---------- лента ---------- -->
+  <ol class="jrn__feed" id="feed"></ol>
+
+  <p class="empty" id="empty" hidden>No entries match these filters.</p>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast__t">Entry deleted</span>
+    <button class="toast__undo" id="undo" type="button">Undo</button>
+    <span class="toast__bar" aria-hidden="true"></span>
+  </div>
+
+  <div class="more">
+    <button class="btn btn--ghost" id="more" type="button" hidden>
+      Show more <span id="moreN"></span>
+    </button>
+    <p class="more__end" id="end" hidden>That's all the entries.</p>
+  </div>
+</main>
+
+<footer class="foot foot--slim">
+  <div class="wrap foot__bot">
+    <span>© 2026 BeKavod · Yavne, Israel</span>
+    <a href="https://engineeragainstdementia.net/status/">System status</a>
+    <a href="https://engineeragainstdementia.net/">Home page</a>
+  </div>
+</footer>
+
+<!-- Окно входа в демо не нужно: сессия демо всегда открыта.
+     Пустой <dialog> оставлен, чтобы код журнала не падал на поиске узлов. -->
+<dialog class="auth" id="auth" aria-labelledby="auth-h" hidden>
+  <form method="dialog" class="auth__box" id="authForm">
+    <h2 id="auth-h">Read-only demo</h2>
+    <p class="auth__lead">This demo needs no sign-in.</p>
+    <input type="hidden" id="login">
+    <input type="hidden" id="pass">
+    <p class="auth__err" id="authErr" hidden></p>
+    <div class="auth__go">
+      <button class="btn btn--primary" value="ok" type="submit">OK</button>
+      <button class="btn btn--ghost" value="cancel" type="button" id="authCancel">Close</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="js/api.js?v=2" defer></script>
+<script src="js/fault.js?v=2" defer></script>
+<script src="js/journal.js?v=12" defer></script>
+</body>
+</html>

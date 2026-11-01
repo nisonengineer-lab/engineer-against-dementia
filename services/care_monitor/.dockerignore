@@ -1,0 +1,14 @@
+.venv/
+data/
+events/
+reference/
+__pycache__/
+*/__pycache__/
+.idea/
+.pytest_cache/
+*.db
+*.db-wal
+*.db-shm
+*.log
+prompt_old.txt
+care_api/

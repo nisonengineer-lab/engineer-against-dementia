@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Данные Care Monitor</title>
+<style>
+:root {
+  color-scheme: light;
+  --surface-0: #f4f3f0;
+  --surface-1: #fcfcfb;
+  --border: #e2e1dc;
+  --grid: #ebeae6;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #7a7974;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --good: #0ca30c;
+  --warning: #fab219;
+  --critical: #d03b3b;
+  --good-ink: #006300;
+  --warning-ink: #8a5a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface-0: #111110;
+    --surface-1: #1a1a19;
+    --border: #33332f;
+    --grid: #2a2a27;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #8f8e86;
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --good-ink: #5fd35f;
+    --warning-ink: #fab219;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface-0: #111110;
+  --surface-1: #1a1a19;
+  --border: #33332f;
+  --grid: #2a2a27;
+  --text-primary: #ffffff;
+  --text-secondary: #c3c2b7;
+  --text-muted: #8f8e86;
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --good-ink: #5fd35f;
+  --warning-ink: #fab219;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 48px; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; justify-content: space-between; }
+h1 { font-size: 24px; margin: 0; }
+h2 { font-size: 17px; margin: 0 0 4px; }
+.sub { color: var(--text-secondary); margin: 2px 0 0; }
+.muted { color: var(--text-muted); font-size: 13px; }
+button {
+  font: inherit; color: var(--text-primary); background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { border-color: var(--text-muted); }
+button[disabled] { opacity: .6; cursor: progress; }
+
+.card {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-top: 16px;
+}
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 20px; }
+.tile { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.tile .label { color: var(--text-secondary); font-size: 13px; }
+.tile .value { font-size: 28px; font-weight: 600; margin-top: 2px; }
+.tile .note { color: var(--text-muted); font-size: 13px; }
+.tile.hero .value { font-size: 40px; line-height: 1.2; }
+
+.chart-head { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 13px; color: var(--text-secondary); }
+.legend span::before {
+  content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 6px; vertical-align: -1px; background: var(--c);
+}
+.chart { position: relative; margin-top: 8px; overflow: hidden; }
+.chart svg { display: block; overflow: visible; }
+.chart text { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.tip {
+  position: absolute; pointer-events: none; background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  white-space: nowrap; display: none; z-index: 2;
+}
+.tip b { display: block; margin-bottom: 2px; }
+.tip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; background: var(--c); }
+
+.checks { list-style: none; padding: 0; margin: 8px 0 0; }
+.checks li { display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid var(--grid); }
+.checks li:first-child { border-top: 0; }
+.badge { flex: none; font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 99px; height: fit-content; margin-top: 2px; }
+.badge.ok { color: var(--good-ink); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.badge.warn { color: var(--warning-ink); background: color-mix(in srgb, var(--warning) 18%, transparent); }
+
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 0 16px; }
+.grid2 > * { min-width: 0; }
+.table-wrap { overflow-x: auto; margin-top: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 6px 8px; text-align: right; border-top: 1px solid var(--grid); white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 500; font-size: 13px; border-top: 0; }
+th:first-child, td:first-child { text-align: left; }
+td:first-child { white-space: normal; }
+td { font-variant-numeric: tabular-nums; }
+#error { color: var(--critical); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Данные Care Monitor</h1>
+      <p class="sub" id="period">Загружаю…</p>
+    </div>
+    <div>
+      <span class="muted" id="updated"></span>
+      <button id="refresh" type="button">Пересчитать</button>
+    </div>
+  </header>
+  <p id="error" hidden></p>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="card">
+    <div class="chart-head">
+      <div>
+        <h2>По дням</h2>
+        <div class="muted">Сколько событий записано, сколько из них с роликом и сколько разобрала модель</div>
+      </div>
+      <button id="toggle-table" type="button">Таблица</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="chart" id="chart"><div class="tip" id="tip"></div></div>
+    <div class="table-wrap" id="day-table" hidden></div>
+  </section>
+
+  <section class="card">
+    <h2>Сверка базы и диска</h2>
+    <div class="muted">Совпадает ли то, что записано в базе, с тем, что лежит в папках</div>
+    <ul class="checks" id="checks"></ul>
+  </section>
+
+  <section class="card">
+    <h2>По камерам</h2>
+    <div class="table-wrap" id="cameras"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Таблицы базы</h2>
+      <div class="muted">monitor.db</div>
+      <div class="table-wrap" id="tables"></div>
+    </section>
+    <section class="card">
+      <h2>Остальные файлы</h2>
+      <div class="muted">Всё, что лежит рядом с папкой событий</div>
+      <div class="table-wrap" id="files"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+const SERIES = [
+  { key: "events",   label: "Событий в базе",    color: "var(--series-1)" },
+  { key: "clips",    label: "С роликом",         color: "var(--series-2)" },
+  { key: "analysed", label: "Разобрано моделью", color: "var(--series-3)" },
+];
+const TABLE_NAMES = {
+  events: "события", analyses: "разборы моделью", labels: "ручные оценки",
+  recheck_queue: "очередь переоценки", last_seen: "последнее появление",
+};
+
+const $ = id => document.getElementById(id);
+const nf = new Intl.NumberFormat("ru-RU");
+const num = n => nf.format(n);
+const pct = (a, b) => b ? Math.round(a / b * 100) + "%" : "—";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+function bytes(n) {
+  const u = ["Б", "КБ", "МБ", "ГБ", "ТБ"];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return (i ? n.toFixed(n < 10 ? 1 : 0) : n) + " " + u[i];
+}
+const MONTHS = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+// 1 запись, 2 записи, 5 записей
+const plural = (n, one, few, many) => {
+  const a = n % 10, b = n % 100;
+  return `${num(n)} ${a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many}`;
+};
+const dayLabel = d => `${+d.slice(8, 10)} ${MONTHS[+d.slice(5, 7) - 1]}`;
+
+function table(cols, rows) {
+  return `<table><thead><tr>${cols.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${
+    rows.map(r => `<tr>${r.map(v => `<td>${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+}
+
+function renderTiles(d) {
+  const t = d.totals, db = d.db;
+  const tiles = [
+    { hero: true, label: "Роликов событий", value: num(t.clips),
+      note: `ещё ${num(t.previews)} коротких превью · ${bytes(t.video_bytes)} видео` },
+    { label: "Записей о событиях", value: db ? num(db.tables.events) : "—", note: `папок на диске: ${num(t.folders)}` },
+    { label: "Разборов моделью", value: db ? num(db.tables.analyses) : "—",
+      note: db ? `${pct(db.check.analysed, db.check.rows)} событий разобрано` : "" },
+    { label: "Ручных оценок", value: db ? num(db.tables.labels) : "—", note: "верно / неверно" },
+    { label: "Кадров", value: num(t.frames), note: "jpg для модели" },
+    { label: "Всего данных", value: bytes(t.events_bytes + t.other_bytes), note: "события, базы и логи" },
+  ];
+  $("tiles").innerHTML = tiles.map(x => `
+    <div class="tile${x.hero ? " hero" : ""}">
+      <div class="label">${x.label}</div>
+      <div class="value">${x.value}</div>
+      <div class="note">${x.note}</div>
+    </div>`).join("");
+}
+
+function renderChart(days) {
+  $("legend").innerHTML = SERIES.map(s => `<span style="--c:${s.color}">${s.label}</span>`).join("");
+  const box = $("chart");
+  box.querySelector("svg")?.remove();
+  const W = box.clientWidth, H = 280, m = { t: 8, r: 4, b: 26, l: 40 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const max = Math.max(1, ...days.flatMap(d => SERIES.map(s => d[s.key])));
+  const step = niceStep(max / 4), top = Math.ceil(max / step) * step;
+  const y = v => m.t + ih - v / top * ih;
+  const gw = iw / days.length, pad = Math.max(2, gw * 0.18);
+  const bw = Math.max(1, (gw - pad - 2 * (SERIES.length - 1)) / SERIES.length);
+  const every = Math.ceil(days.length / Math.max(1, Math.floor(iw / 44)));
+
+  let g = "";
+  for (let v = 0; v <= top; v += step) {
+    g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/>`;
+    g += `<text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${num(v)}</text>`;
+  }
+  days.forEach((d, i) => {
+    const x0 = m.l + i * gw + pad / 2;
+    SERIES.forEach((s, k) => {
+      const h = ih - (y(d[s.key]) - m.t);
+      if (h > 0) g += barPath(x0 + k * (bw + 2), y(d[s.key]), bw, h, s.color);
+    });
+    if (i % every === 0)
+      g += `<text x="${x0 + (gw - pad) / 2}" y="${H - 8}" text-anchor="middle">${dayLabel(d.day)}</text>`;
+    g += `<rect class="hit" data-i="${i}" x="${m.l + i * gw}" y="${m.t}" width="${gw}" height="${ih}" fill="transparent"/>`;
+  });
+  g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(0)}" y2="${y(0)}" stroke="var(--border)"/>`;
+
+  box.insertAdjacentHTML("beforeend",
+    `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="События, ролики и разборы по дням">${g}</svg>`);
+  const tip = $("tip");
+  box.querySelectorAll(".hit").forEach(r => {
+    r.addEventListener("mouseenter", () => r.setAttribute("fill", "color-mix(in srgb, var(--text-muted) 10%, transparent)"));
+    r.addEventListener("mouseleave", () => { r.setAttribute("fill", "transparent"); tip.style.display = "none"; });
+    r.addEventListener("mousemove", e => {
+      const d = days[+r.dataset.i];
+      tip.innerHTML = `<b>${dayLabel(d.day)}</b>` +
+        SERIES.map(s => `<div><i style="--c:${s.color}"></i>${s.label}: ${num(d[s.key])}</div>`).join("") +
+        `<div class="muted">видео: ${bytes(d.video_bytes)}</div>`;
+      tip.style.display = "block";
+      const bx = box.getBoundingClientRect();
+      let left = e.clientX - bx.left + 12;
+      if (left + tip.offsetWidth > bx.width) left = e.clientX - bx.left - tip.offsetWidth - 12;
+      tip.style.left = Math.max(0, left) + "px";
+      tip.style.top = (e.clientY - bx.top - 10) + "px";
+    });
+  });
+}
+
+function niceStep(raw) {
+  const p = 10 ** Math.floor(Math.log10(raw || 1));
+  return [1, 2, 2.5, 5, 10].map(k => k * p).find(s => s >= raw) || 10 * p;
+}
+
+// Столбик со скруглённым верхом и прямым основанием на нулевой линии.
+function barPath(x, y, w, h, color) {
+  const r = Math.min(4, w / 2, h);
+  return `<path fill="${color}" d="M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z"/>`;
+}
+
+function renderDayTable(days) {
+  $("day-table").innerHTML = table(
+    ["День", "Событий", "С роликом", "Превью", "Разобрано", "Оценено", "Кадров", "Видео"],
+    days.map(d => [dayLabel(d.day), num(d.events), num(d.clips), num(d.previews),
+                   num(d.analysed), num(d.labelled), num(d.frames), bytes(d.video_bytes)]));
+}
+
+function renderChecks(d) {
+  const c = d.db?.check;
+  if (!c) { $("checks").innerHTML = `<li><span class="badge warn">нет базы</span>monitor.db не найдена</li>`; return; }
+  const items = [
+    [c.rows_without_folder === 0, `Для всех записей (${num(c.rows)}) есть папка на диске`,
+     `Нет папки на диске: ${plural(c.rows_without_folder, "запись", "записи", "записей")}`],
+    [c.folders_without_row === 0, "Нет папок без записи в базе",
+     `На диске без записи в базе: ${plural(c.folders_without_row, "папка", "папки", "папок")}`],
+    [c.rows_with_clip === c.rows, "У всех записей есть ролик",
+     `Без ролика: ${plural(c.rows - c.rows_with_clip, "запись", "записи", "записей")} (${pct(c.rows - c.rows_with_clip, c.rows)}), почти у всех папка пустая, нет и кадров`],
+    [c.analysed === c.rows, "Модель разобрала все события",
+     `Модель не разобрала: ${plural(c.rows - c.analysed, "событие", "события", "событий")} (${pct(c.rows - c.analysed, c.rows)})`],
+    [c.rows_deleted === 0, "Нет записей, помеченных удалёнными",
+     `Помечены удалёнными, но остались в базе: ${plural(c.rows_deleted, "запись", "записи", "записей")}`],
+  ];
+  $("checks").innerHTML = items.map(([ok, good, bad]) =>
+    `<li><span class="badge ${ok ? "ok" : "warn"}">${ok ? "✓ норма" : "! внимание"}</span><span>${ok ? good : bad}</span></li>`
+  ).join("");
+}
+
+function render(d) {
+  const p = d.db?.period;
+  $("period").textContent = p
+    ? `Записи с ${p.first.slice(0, 16)} по ${p.last.slice(0, 16)} · ${d.days.filter(x => x.events).length} дней`
+    : "База не найдена";
+  $("updated").textContent = `посчитано ${d.generated_at.slice(11, 16)} · `;
+  renderTiles(d);
+  const days = d.days.filter(x => x.events || x.folders);
+  renderChart(days);
+  renderDayTable(days);
+  renderChecks(d);
+  $("cameras").innerHTML = table(
+    ["Камера", "Событий", "С роликом", "Превью", "Разобрано", "Кадров", "Объём"],
+    d.cameras.map(c => [esc(c.camera), num(c.events), num(c.clips), num(c.previews),
+                        `${num(c.analysed)} <span class="muted">${pct(c.analysed, c.events)}</span>`,
+                        num(c.frames), bytes(c.bytes)]));
+  $("tables").innerHTML = d.db ? table(["Таблица", "Записей"],
+    Object.entries(d.db.tables).map(([k, v]) =>
+      [`${esc(k)} <span class="muted">${TABLE_NAMES[k] || ""}</span>`, num(v)])) : "";
+  $("files").innerHTML = table(["Файл", "Размер"], d.files.map(f => [esc(f.name), bytes(f.bytes)]));
+}
+
+let data = null;
+async function load(refresh) {
+  $("refresh").disabled = true;
+  try {
+    const r = await fetch("api/inventory" + (refresh ? "?refresh=1" : ""));
+    if (!r.ok) throw new Error(`сервер ответил ${r.status}`);
+    data = await r.json();
+    $("error").hidden = true;
+    render(data);
+  } catch (e) {
+    $("error").textContent = "Не удалось получить данные: " + e.message;
+    $("error").hidden = false;
+  } finally {
+    $("refresh").disabled = false;
+  }
+}
+
+$("refresh").addEventListener("click", () => load(true));
+$("toggle-table").addEventListener("click", () => {
+  const t = $("day-table");
+  t.hidden = !t.hidden;
+  $("toggle-table").textContent = t.hidden ? "Таблица" : "Скрыть таблицу";
+});
+// Перерисовываем график, когда меняется ширина его блока (поворот телефона,
+// появление полосы прокрутки), а не только окна.
+let lastW = 0, rt;
+new ResizeObserver(([e]) => {
+  const w = Math.round(e.contentRect.width);
+  if (!data || w === lastW) return;
+  lastW = w;
+  clearTimeout(rt);
+  rt = setTimeout(() => renderChart(data.days.filter(x => x.events || x.folders)), 100);
+}).observe($("chart"));
+load(false);
+</script>
+</body>
+</html>

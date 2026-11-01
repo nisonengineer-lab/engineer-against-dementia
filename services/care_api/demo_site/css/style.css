@@ -1,0 +1,744 @@
+/* ==========================================================================
+   BeKavod — дизайн-система
+   Палитра прогнана через валидатор: контраст, цветовая слепота, разделимость.
+   ========================================================================== */
+:root{
+  --bg:#12100E;
+  --surface:#1A1714;
+  --surface-2:#221E1A;
+  --ink:#F5F0E8;
+  --ink-2:#A8A29A;
+  --ink-3:#6E6862;
+  --accent:#F0A868;
+  --accent-hi:#F6B87E;
+  --line:rgba(245,240,232,.08);
+  --line-strong:rgba(245,240,232,.18);
+  --good:#0ca30c;
+  --warn:#fab219;
+  --crit:#d03b3b;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --maxw:1180px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%}
+a{color:var(--accent)}
+.wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:26px}
+
+/* ==========================================================================
+   ШАПКА-БАННЕР
+   ========================================================================== */
+.hero{position:relative;min-height:max(600px,100svh);
+      display:flex;flex-direction:column;overflow:hidden;isolation:isolate;
+      border-block-end:1px solid rgba(245,240,232,.20)}
+
+/* Фотография. object-position смещён вправо: рукопожатие должно остаться
+   в кадре при любой ширине, а слева освобождается место под текст. */
+.hero__media{position:absolute;inset:0;z-index:0}
+.hero__media img{width:100%;height:100%;object-fit:cover;
+                 object-position:76% 47%;}
+
+/* Затемнение. Два слоя: слева — под текст, снизу — стык с фоном страницы. */
+.hero__scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    /* пятно под текстом: нижний левый угол */
+    radial-gradient(120% 95% at 6% 96%,
+      rgba(12,10,8,.96) 0%, rgba(12,10,8,.88) 26%,
+      rgba(12,10,8,.55) 48%, rgba(12,10,8,.12) 70%, transparent 84%),
+    /* мягкая подложка снизу и стык с фоном страницы */
+    linear-gradient(180deg,
+      rgba(14,11,9,.55) 0%, rgba(14,11,9,.10) 22%,
+      rgba(14,11,9,.10) 46%, rgba(14,11,9,.72) 82%,
+      rgba(14,11,9,.94) 94%, var(--bg) 100%),
+    /* лёгкая тень слева, чтобы навигация читалась */
+    linear-gradient(100deg, rgba(14,11,9,.55) 0%, rgba(14,11,9,.12) 34%, transparent 58%);
+}
+
+/* --- навигация --- */
+.hero > .wrap{position:relative;z-index:2}
+.hero__bar{position:relative;z-index:3;
+           border-block-end:1px solid var(--accent)}
+.nav{display:flex;align-items:center;justify-content:space-between;
+     gap:22px;flex-wrap:wrap;padding-block:22px}
+.brand{display:flex;align-items:baseline;gap:12px;text-decoration:none;color:var(--ink)}
+.brand__mark{font-size:22px;font-weight:600;letter-spacing:-.025em}
+.brand__mark span{color:var(--accent)}
+.brand__tag{font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+            text-transform:uppercase;color:rgba(245,240,232,.55);white-space:nowrap}
+.nav__links{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.nav__links a{color:rgba(245,240,232,.82);text-decoration:none;font-size:14.5px;
+              padding-block:11px}   /* до 44px по высоте — палец попадает */
+.nav__links a:hover{color:var(--ink)}
+/* Переключатель языка. Активный отмечает сам скрипт — ставит
+   aria-current на нужную ссылку. Заливаем её акцентом, а не подкрашиваем
+   текст: с одного взгляда должно быть видно, какой язык включён. */
+.lang{display:flex;border:1px solid rgba(245,240,232,.22);border-radius:8px;
+      overflow:hidden;font-family:var(--mono);font-size:11.5px;
+      background:rgba(18,16,14,.5)}
+.lang a{padding:12px 14px;color:rgba(245,240,232,.62);text-decoration:none;
+        line-height:1;letter-spacing:.06em;
+        transition:background .18s, color .18s}
+.lang a + a{border-inline-start:1px solid rgba(245,240,232,.14)}
+.lang a:hover{background:rgba(245,240,232,.07);color:var(--ink)}
+.lang a[aria-current]{background:var(--accent);color:#1A1409;font-weight:600;
+        box-shadow:0 0 16px rgba(240,168,104,.35)}
+.lang a[aria-current]:hover{background:var(--accent-hi);color:#1A1409}
+
+/* --- содержимое баннера --- */
+.hero__body{flex:1;display:flex;align-items:center;padding-block:40px}
+.hero__col{max-width:31ch}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.11em;
+        text-transform:uppercase;color:var(--accent);margin:0 0 22px;
+        white-space:nowrap}
+.hero h1{margin:0;font-size:clamp(30px,3.9vw,46px);line-height:1.14;
+         font-weight:600;letter-spacing:-.025em;
+         text-shadow:0 2px 34px rgba(8,6,4,.75)}
+.hero h1 .dim{color:#DCD3C7;font-weight:400;font-size:.74em;
+              line-height:1.24;display:inline-block;margin-block-start:.18em}
+
+/* --- сменяющаяся строка журнала --- */
+.ticker{position:relative;height:62px;margin-block-start:29px}
+.ticker__item{position:absolute;inset:0;display:flex;gap:15px;
+  align-items:flex-start;opacity:0;transform:translateY(10px);
+  transition:opacity .5s ease,transform .5s ease}
+.ticker__item.is-on{opacity:1;transform:none}
+.ticker__time{font-family:var(--mono);font-size:14px;color:var(--accent);
+              padding-block-start:3px;white-space:nowrap}
+.ticker__text{font-size:16.5px;color:#E6DED3;line-height:1.45;
+              text-shadow:0 1px 18px rgba(8,6,4,.7)}
+.ticker__text b{color:var(--ink);font-weight:600}
+
+.cta{display:flex;gap:13px;margin-block-start:33px;
+     flex-wrap:nowrap;width:max-content;max-width:none}
+.btn{display:inline-block;padding:14px 25px;border-radius:8px;font-size:15.5px;
+     text-decoration:none;border:1px solid transparent;transition:.15s;
+     white-space:nowrap}
+.btn--primary{background:var(--accent);color:#1A1409;font-weight:550}
+.btn--primary:hover{background:var(--accent-hi)}
+.btn--ghost{border-color:rgba(245,240,232,.34);color:var(--ink);
+            background:rgba(18,16,14,.34);backdrop-filter:blur(8px)}
+.btn--ghost:hover{border-color:rgba(245,240,232,.6)}
+
+/* --- нижняя полоса баннера --- */
+.hero__foot{position:relative;z-index:2;display:flex;justify-content:space-between;
+  align-items:center;gap:18px;flex-wrap:wrap;padding-block:18px;
+  border-block-start:1px solid rgba(245,240,232,.14);
+  font-size:13px;color:rgba(245,240,232,.66)}
+.live{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12.5px}
+.live__dot{width:8px;height:8px;border-radius:50%;background:var(--good);
+  box-shadow:0 0 0 0 rgba(12,163,12,.6);animation:pulse 2.4s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(12,163,12,0)}
+                 100%{box-shadow:0 0 0 0 rgba(12,163,12,0)}}
+.credit{font-family:var(--mono);font-size:11.5px;color:rgba(245,240,232,.52)}
+
+/* ==========================================================================
+   АДАПТИВ
+   ========================================================================== */
+@media (max-width:880px){
+  /* Узкий экран: текст НЕ накладываем на фото.
+     Порядком флекса ставим навигацию первой, под ней фото полосой,
+     под фото — текст на чистом фоне. Абсолютов нет: .nav позиционировался
+     относительно своей обёртки и уезжал на текст. */
+  .hero{min-height:0}
+  .hero__bar{order:-1}                            /* навигация наверх */
+  .hero__media{order:0;position:relative;inset:auto;aspect-ratio:16/11}
+  .hero__media img{object-position:56% 46%}
+  /* мягкий стык фото с фоном страницы */
+  .hero__media::after{content:"";position:absolute;inset-inline:0;
+    inset-block-end:-1px;height:34%;pointer-events:none;
+    background:linear-gradient(180deg,transparent,var(--bg) 92%)}
+  .hero__scrim{display:none}
+  .hero__body{display:block;padding-block:30px 4px}
+  .hero__col{max-width:none}
+  .ticker{height:88px}
+  .nav{padding-block:16px}
+  .kicker{font-size:9.5px;letter-spacing:.08em}
+  .cta{width:auto}
+  .cta .btn{padding:12px 15px;font-size:14.5px}
+}
+@media (max-width:520px){
+  body{font-size:16px}
+  .nav__links a:not(.lang a){display:none}
+  .ticker{height:104px}
+}
+@media (max-width:380px){
+  /* На самых узких экранах две кнопки в строку не влезают */
+  .cta{flex-wrap:wrap}
+  .cta .btn{flex:1 1 100%;text-align:center}
+}
+
+/* Уважаем настройку «меньше движения» */
+@media (prefers-reduced-motion:reduce){
+  .ticker__item{transition:none}
+  .live__dot{animation:none}
+  html{scroll-behavior:auto}
+}
+
+/* RTL: всё на logical properties, поэтому нужен только разворот фото */
+[dir="rtl"] .hero__media img{transform:scaleX(-1)}
+[dir="rtl"] .hero__scrim{background:
+  linear-gradient(260deg,
+    rgba(14,11,9,.94) 0%, rgba(14,11,9,.86) 26%, rgba(14,11,9,.52) 52%,
+    rgba(14,11,9,.10) 78%, rgba(14,11,9,0) 100%),
+  linear-gradient(180deg,
+    rgba(14,11,9,.62) 0%, rgba(14,11,9,0) 26%, rgba(14,11,9,0) 58%,
+    rgba(14,11,9,.80) 88%, var(--bg) 100%)}
+
+
+/* ==========================================================================
+   ПОЧЕМУ BEKAVOD — фотография во всю ширину, текст слева
+   ========================================================================== */
+.why{position:relative;overflow:hidden;isolation:isolate;
+     min-height:clamp(680px,94svh,940px);display:flex;
+     border-block-end:1px solid var(--line)}
+
+.why__media{position:absolute;inset:0;z-index:0}
+.why__media img{width:100%;height:100%;object-fit:cover;object-position:66% 34%}
+
+/* Затемнение: плотное слева под текст, лёгкое справа — там лицо */
+.why__scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(96deg,
+      rgba(12,10,8,.95) 0%, rgba(12,10,8,.90) 24%,
+      rgba(12,10,8,.62) 44%, rgba(12,10,8,.18) 66%,
+      rgba(12,10,8,.02) 84%, transparent 100%),
+    linear-gradient(180deg,
+      rgba(14,11,9,.62) 0%, rgba(14,11,9,.06) 22%,
+      rgba(14,11,9,.06) 62%, rgba(14,11,9,.72) 90%, var(--bg) 100%);
+}
+
+.why__in{position:relative;z-index:2;display:flex;align-items:center;
+         padding-block:clamp(40px,6vh,80px)}
+.why__text{max-width:48.5ch}
+
+/* ВОПРОС — главный заголовок раздела. Ответ идёт ниже и мельче. */
+.why__q{margin:0;font-size:clamp(27px,min(4.6vw,5.4vh),54px);line-height:1.06;
+        font-weight:600;letter-spacing:-.028em;color:var(--ink);
+        white-space:nowrap;                 /* вопрос всегда одной строкой */
+        text-shadow:0 2px 34px rgba(8,6,4,.82)}
+.why__brand{font-weight:600}
+.why__brand span{color:var(--accent)}
+
+/* Короткая черта отделяет вопрос от ответа */
+.why__q::after{content:"";display:block;width:64px;height:2px;
+               background:var(--accent);margin-block-start:clamp(14px,2.4vh,26px)}
+
+/* Первая фраза ответа — крупнее остального текста */
+.why__text p.why__lead{margin:clamp(16px,2.6vh,26px) 0 0;
+           font-size:clamp(17px,min(2.1vw,2.5vh),24px);
+           line-height:1.34;font-weight:500;color:var(--ink);
+           max-width:29ch;letter-spacing:-.012em;
+           text-shadow:0 2px 26px rgba(8,6,4,.8)}
+.why__text p{margin:clamp(12px,2.1vh,22px) 0 0;color:#DDD5CA;max-width:52ch;
+             font-size:clamp(14.5px,min(1.25vw,1.85vh),17.5px);
+             text-shadow:0 1px 20px rgba(8,6,4,.75)}
+
+
+.pull{margin:clamp(16px,2.7vh,30px) 0 0;padding:4px 0 4px 22px;
+      border-inline-start:2px solid var(--accent);
+      font-size:clamp(17px,min(2.1vw,2.4vh),23px);line-height:1.36;
+      color:var(--ink);font-weight:500;max-width:34ch;
+      text-shadow:0 2px 26px rgba(8,6,4,.85)}
+
+/* Заключение — теперь это обещание, а не подпись. Поэтому крупно. */
+.why__text p.closing{margin-block-start:clamp(16px,2.8vh,34px);
+      padding-block-start:clamp(14px,2.2vh,24px);
+      border-block-start:1px solid rgba(245,240,232,.16);
+      font-size:clamp(18px,min(2.3vw,2.6vh),26px);line-height:1.28;font-weight:500;
+      color:var(--ink);max-width:24ch;letter-spacing:-.012em}
+.closing b{color:var(--accent);font-size:1.2em;font-weight:500;
+           margin-inline-end:4px}
+.closing span{color:var(--accent)}
+.why__text p b{color:var(--ink);font-weight:600}
+
+/* Плашка в правом нижнем углу — поверх места, где на футболке наклейка */
+.factcard{position:absolute;inset-block-end:46px;inset-inline-end:26px;
+          width:min(320px,38%);
+          border:1px solid rgba(245,240,232,.16);border-radius:12px;
+          padding:20px 22px;background:rgba(18,15,12,.82);
+          backdrop-filter:blur(10px)}
+.factcard__label{margin:0;font-family:var(--mono);font-size:12px;font-weight:500;
+                 letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.factcard__value{margin:9px 0 0;font-size:18px;font-weight:600;color:var(--ink)}
+.factcard__note{margin:8px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+
+@media (max-width:880px){
+  /* Узкий экран: текст не накладываем на фото */
+  .why{min-height:0;display:block}
+  .why__media{position:relative;inset:auto;aspect-ratio:16/11}
+  .why__media img{object-position:62% 30%}
+  .why__media::after{content:"";position:absolute;inset-inline:0;
+    inset-block-end:-1px;height:32%;pointer-events:none;
+    background:linear-gradient(180deg,transparent,var(--bg) 92%)}
+  .why__scrim{display:none}
+  .why__in{display:block;padding-block:34px 56px}
+  .why__text{max-width:none}
+  .why__text p,.why__q,.pull{text-shadow:none}
+  .why__q::after{margin-block-start:20px}
+  .why__text p{color:var(--ink-2)}
+
+  .factcard{position:static;width:auto;margin-block-start:34px;
+            backdrop-filter:none;background:var(--surface-2)}
+}
+
+
+/* ==========================================================================
+   КАК ЭТО РАБОТАЕТ · провода и блоки
+
+   Сетка блока симметрична: 1fr — жёлоб — 1fr. Центр жёлоба всегда ровно
+   на 50%, поэтому провода вешаются на calc(50% + смещение) и ширину
+   колонок знать не нужно.
+
+   Провода нарезаны на куски по блокам, чтобы каждый кусок знал, где ему
+   оборваться:
+       .lead     провода проявляются из ничего
+       .node     кусок внутри блока; .lane--cut обрывается на развилке
+       .tail     остаток уходит вниз и тает
+   Линия развилки в каждом блоке — вертикальная середина колонки с
+   картинками. Для двух картинок это ровно просвет между ними, для одной —
+   её центр. В обоих случаях это 50% высоты блока за вычетом отбивки,
+   поэтому обрыв провода считается одной формулой.
+   ========================================================================== */
+:root{
+  --wire:rgba(240,168,104,.46);
+  --sp:7px;                             /* шаг между проводами */
+  --gutter:clamp(112px,14vw,190px);
+  --pic:clamp(150px,21vw,290px);
+  --pic-gap:clamp(24px,3.4vh,48px);
+  --brain:clamp(210px,30vw,400px);
+  --alert:clamp(210px,30vw,400px);
+  --box:clamp(200px,26vw,350px);
+  --pre:150px;      /* сколько провод идёт до коробки */
+  --stub:calc(var(--gutter) * .24);     /* вылет от картинки до стойки */
+  --lead:130px;                         /* сколько провода видно сверху */
+  --tail:170px;                         /* и снизу */
+  --node-gap:clamp(64px,9vh,132px);     /* отбивка между блоками */
+}
+
+.how{padding-block:clamp(64px,9vh,120px) clamp(40px,6vh,90px);background:var(--bg)}
+
+.eyebrow{margin:0;font-family:var(--mono);font-size:12px;font-weight:500;
+         letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+
+.how__head{max-width:660px;margin-inline:auto;text-align:center}
+.how__title{margin:0;font-size:clamp(30px,4.2vw,52px);line-height:1.08;
+            font-weight:600;letter-spacing:-.028em;color:var(--ink)}
+.how__title::after{content:"";display:block;width:64px;height:2px;
+                   background:var(--accent);margin:22px auto 0}
+.how__sub{margin:22px 0 0;font-size:clamp(17px,2vw,21px);line-height:1.4;
+          color:var(--ink-2)}
+
+.rail{margin-block-start:clamp(20px,3vh,44px)}
+
+/* ---------- провода ---------- */
+.lead,.tail{position:relative}
+.lead{height:var(--lead)}
+.tail{height:var(--tail)}
+
+.lane{position:absolute;z-index:0;pointer-events:none;width:1px;
+      inset-block:0 0;inset-inline-start:calc(50% + var(--x));
+      background:var(--wire)}
+.lane--1{--x:calc(-3 * var(--sp))}
+.lane--2{--x:calc(-1 * var(--sp))}
+.lane--3{--x:calc( 1 * var(--sp))}
+.lane--4{--x:calc( 3 * var(--sp))}
+
+/* сверху проявляются, снизу тают */
+.lead .lane{background:linear-gradient(180deg,transparent,var(--wire))}
+.tail .lane{background:linear-gradient(180deg,var(--wire),transparent)}
+
+/* провод, который в этом блоке уходит в сторону, обрывается на развилке */
+.lane--cut{inset-block-end:auto;
+           height:calc((100% - var(--node-gap)) / 2)}
+
+/* ---------- блок ---------- */
+.node{position:relative;display:grid;
+      grid-template-columns:1fr var(--gutter) 1fr;align-items:center;
+      padding-block-end:var(--node-gap)}
+.node__media{grid-row:1;position:relative}
+.node__say{grid-row:1;max-width:46ch}
+
+/* 01 — картинки слева, текст справа */
+.node--eyes .node__media{grid-column:1;justify-self:end;width:var(--pic)}
+.node--eyes .node__say{grid-column:3}
+/* 02 — зеркально: текст слева, картинка справа */
+.node--mind .node__media{grid-column:3;justify-self:start;width:var(--brain)}
+.node--mind .node__say{grid-column:1;justify-self:end}
+/* 03 — снова картинка слева, текст справа */
+.node--alert .node__media{grid-column:1;justify-self:end;width:var(--alert)}
+.node--alert .node__say{grid-column:3}
+
+/* ---------- картинка в рамке ---------- */
+.pic{position:relative;z-index:1;margin:0;width:100%;aspect-ratio:1;
+     padding:6px;border:1px solid var(--wire);border-radius:22px;
+     background:var(--surface);box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.pic + .pic{margin-block-start:var(--pic-gap)}
+.pic picture{display:block;width:100%;height:100%}
+.pic img{width:100%;height:100%;object-fit:cover;border-radius:16px}
+
+/* холст мозга: подложка темнее фона, чтобы свечение читалось */
+.pic--brain{background:radial-gradient(120% 120% at 50% 45%,
+              #191410 0%, #120F0C 60%, #0D0B09 100%);
+            box-shadow:0 20px 60px rgba(0,0,0,.55),
+                       inset 0 0 60px rgba(240,168,104,.05)}
+.pic--brain canvas{display:block;width:100%;height:100%;border-radius:16px;
+                   touch-action:pan-y}
+
+/* ---------- развилка на две картинки (блок 01) ---------- */
+.br{position:absolute;z-index:0;pointer-events:none;
+    inset-inline-start:100%;width:var(--stub);
+    height:calc((var(--pic) + var(--pic-gap)) / 2);
+    border-inline-end:1px solid var(--wire)}
+.br--top{inset-block-start:calc(var(--pic) / 2);
+         border-block-start:1px solid var(--wire);border-start-end-radius:20px}
+.br--bot{inset-block-start:calc(var(--pic) + var(--pic-gap) / 2);
+         border-block-end:1px solid var(--wire);border-end-end-radius:20px}
+
+/* подвод от развилки до своего провода */
+.feed{position:absolute;z-index:0;pointer-events:none;height:1px;
+      inset-inline-start:100%;margin-inline-start:var(--stub);
+      inset-block-start:calc(var(--pic) + var(--pic-gap) / 2);
+      width:calc(var(--gutter) / 2 - 3 * var(--sp) - var(--stub));
+      background:var(--wire)}
+
+/* Провод берётся с той стороны, где стоит картинка, — иначе шнур
+   пересекал бы колонку с текстом.
+
+   Блок 02: картинка СПРАВА, тянем от крайнего правого провода.
+   Он стоит на (центр + 3 шага), левый край рамки — на (центр + половина
+   жёлоба), значит длина подвода это разность. */
+.feed--right{inset-inline-start:auto;inset-inline-end:100%;
+             margin-inline-start:0;
+             inset-block-start:calc(50% - .5px);
+             width:calc(var(--gutter) / 2 - 3 * var(--sp))}
+/* Блок 03: картинка СЛЕВА, тянем к ближнему левому проводу.
+   Зеркально, длина та же. */
+.feed--left{inset-inline-start:100%;margin-inline-start:0;
+            inset-block-start:calc(50% - .5px);
+            width:calc(var(--gutter) / 2 - var(--sp))}
+
+/* точка входа в рамку */
+.feed--right::after,.feed--left::after{content:"";position:absolute;
+  inset-block-start:-2.5px;width:6px;height:6px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 10px rgba(240,168,104,.7)}
+.feed--right::after{inset-inline-end:-3px}
+.feed--left::after{inset-inline-start:-3px}
+
+/* ---------- 04 · коробка по центру, провод растворяется над ней ----------
+   Провод спускается по своей дорожке, S-образным изгибом переходит на
+   центр и гаснет. S собран из двух четвертей окружности радиусом
+   1.5 шага: правая поворачивает вниз→влево, левая влево→вниз. Радиусы
+   равны половине сдвига, поэтому дуги стыкуются без прямого участка. */
+.node--box{display:block;padding-block-start:var(--pre);text-align:center}
+.node--box .lane--cut{height:calc(var(--pre) - 96px)}
+
+/* На широком экране изгиба нет: последний провод идёт прямо вниз и
+   гаснет над коробкой. Угол нужен только на узком, где жгут у края. */
+.wire-s{display:none;position:absolute;z-index:0;pointer-events:none}
+
+/* хвост провода: гаснет, не доходя до коробки */
+.drop{position:absolute;z-index:0;pointer-events:none;width:1px;
+      inset-inline-start:calc(50% + var(--sp) - .5px);
+      inset-block-start:calc(var(--pre) - 96px);
+      height:74px;
+      background:linear-gradient(180deg,var(--wire),transparent)}
+
+/* ---------- кольцо: тезисы вокруг коробки ---------- */
+.ring{display:grid;grid-template-columns:1fr auto 1fr;
+      align-items:center;column-gap:clamp(28px,4vw,64px)}
+.pic--box{width:var(--box);margin-inline:auto}
+
+.claims{margin:0;padding:0;list-style:none;display:grid;
+        gap:clamp(26px,4vh,46px)}
+.claims li{margin:0}
+.claims b{display:block;font-size:17px;font-weight:600;line-height:1.28;
+          letter-spacing:-.014em;color:var(--ink)}
+.claims span{display:block;margin-block-start:8px;font-size:14.5px;
+             line-height:1.5;color:var(--ink-2)}
+.claims--start{text-align:end}
+.claims--start li{padding-inline-end:16px;
+                  border-inline-end:1px solid rgba(240,168,104,.22)}
+.claims--end{text-align:start}
+.claims--end li{padding-inline-start:16px;
+                border-inline-start:1px solid rgba(240,168,104,.22)}
+
+.box__say{max-width:56ch;margin:clamp(34px,5vh,60px) auto 0}
+.box__say .say__kind{justify-content:center}
+.box__say .say__kind::after{display:none}
+.box__say .say__p{margin-inline:auto}
+
+/* ---------- текст ---------- */
+/* Подзаголовок блока: номер в янтарной рамке, подпись светлая, дальше
+   тонкая черта до конца колонки. Раньше это была тусклая моношрифтовая
+   строка — её просто не замечали. */
+.say__kind{margin:0;display:flex;align-items:center;gap:14px;
+           font-family:var(--mono);font-size:13.5px;font-weight:500;
+           letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.say__kind i{font-style:normal;flex:none;
+             display:grid;place-items:center;min-width:34px;height:28px;
+             padding-inline:8px;border:1px solid rgba(240,168,104,.45);
+             border-radius:8px;background:rgba(240,168,104,.10);
+             color:var(--accent);font-size:13px;font-weight:600;
+             letter-spacing:.04em}
+.say__kind::after{content:"";flex:1;height:1px;min-width:20px;
+                  background:linear-gradient(90deg,
+                    rgba(240,168,104,.34),rgba(240,168,104,0))}
+.say__h{margin:16px 0 0;font-size:clamp(24px,3vw,36px);line-height:1.14;
+        font-weight:600;letter-spacing:-.024em;color:var(--ink)}
+.say__p{margin:18px 0 0;font-size:16.5px;line-height:1.6;color:var(--ink-2)}
+.say__p b{color:var(--ink);font-weight:600}
+
+@media (max-width:900px){
+  /* Узкий экран: жгут уходит к ПРАВОМУ краю, картинки колонкой слева,
+     описание под ними. Развилка та же, просто подвод тянется вправо.
+     .node__media снимаем с position:relative — тогда развилка считается
+     от всего блока и подвод растягивается двумя отступами, без знания
+     ширины экрана. */
+  :root{--sp:4px;--pic:clamp(142px,44vw,208px);--pic-gap:24px;
+        --brain:clamp(180px,56vw,280px);--alert:clamp(180px,56vw,280px);
+        --stub:34px;--lead:96px;--tail:120px;--rail-edge:20px;
+        --node-gap:clamp(48px,7vh,84px)}
+
+  .how__head{text-align:start;margin-inline:0}
+  .how__title::after{margin-inline:0}
+
+  .node{display:block;padding-inline-end:calc(var(--rail-edge) + 58px)}
+  /* justify-self снимаем явно: в свежих Chrome выравнивание работает
+     и в блочной раскладке, и блок уезжал к правому краю. */
+  .node__media,.node--eyes .node__media,.node--mind .node__media{
+      position:static;justify-self:start}
+  .node--eyes .node__media{width:var(--pic)}
+  .node--mind .node__media{width:var(--brain)}
+  .node--alert .node__media{width:var(--alert)}
+  .node__say,.node--mind .node__say{max-width:none;margin-block-start:32px;
+      justify-self:start}
+
+  .lane{inset-inline-start:auto;
+        inset-inline-end:calc(var(--rail-edge) - var(--x))}
+  /* Картинки встали над текстом, поэтому линия развилки больше не
+     середина блока — она привязана к самим картинкам. */
+  /* Коробка по центру, провод приходит к ней от правого края одним углом */
+  :root{--box:clamp(180px,58vw,260px);--pre:134px}
+  .node--box{padding-inline-end:0;padding-block-start:var(--pre)}
+  .node--box .lane--cut{height:calc(var(--pre) - 96px)}
+  /* Угол нужен только тут: жгут прижат к краю, коробка по центру. */
+  .wire-s--a{display:block;
+    inset-block-start:calc(var(--pre) - 96px);
+    inset-inline-start:50%;width:auto;height:34px;
+    inset-inline-end:calc(var(--rail-edge) - var(--sp));
+    border-inline-end:1px solid var(--wire);
+    border-block-end:1px solid var(--wire);
+    border-end-end-radius:20px}
+  .drop{inset-inline-start:calc(50% - .5px);
+        inset-block-start:calc(var(--pre) - 96px + 34px);
+        height:calc(96px - 34px - 18px)}
+  /* В колонку: сначала коробка — провод приходит прямо к ней, —
+     а тезисы уже под ней. */
+  .ring{grid-template-columns:1fr;justify-items:stretch;row-gap:28px}
+  .pic--box{order:-1}
+  .claims{gap:22px;text-align:start}
+  .claims--start,.claims--end{text-align:start}
+  .claims--start li,.claims--end li{padding-inline:16px 0;
+      border-inline-end:0;
+      border-inline-start:1px solid rgba(240,168,104,.22)}
+  .box__say{margin-inline:0;max-width:none;text-align:start}
+
+  .node--eyes .lane--cut{height:calc(var(--pic) + var(--pic-gap) / 2)}
+  .node--mind .lane--cut{height:calc(var(--brain) / 2)}
+  .node--alert .lane--cut{height:calc(var(--alert) / 2)}
+
+  .br{inset-inline-start:var(--pic)}
+  .feed{inset-inline-start:calc(var(--pic) + var(--stub));
+        inset-inline-end:calc(var(--rail-edge) + 3 * var(--sp));
+        margin-inline-start:0;width:auto}
+  .feed--right{inset-inline-start:var(--brain);
+        inset-inline-end:calc(var(--rail-edge) - 3 * var(--sp));
+        inset-block-start:calc(var(--brain) / 2);width:auto}
+  .feed--left{inset-inline-start:var(--alert);
+        inset-inline-end:calc(var(--rail-edge) + var(--sp));
+        inset-block-start:calc(var(--alert) / 2);width:auto}
+  .feed--right::after{inset-inline-end:auto;inset-inline-start:-3px}
+}
+@media (max-width:560px){
+  :root{--pic:clamp(128px,46vw,172px);--brain:clamp(170px,58vw,240px);
+        --alert:clamp(170px,58vw,240px);--stub:26px;--rail-edge:16px}
+  .say__h{font-size:clamp(22px,7vw,28px)}
+}
+
+/* ==========================================================================
+   СВЯЗАТЬСЯ
+
+   Форму не ставим: покупатель тут — взрослый человек, которому проще
+   нажать «позвонить», чем заполнять поля. Каждый канал — крупная
+   ссылка высотой под палец, значения показаны сразу, без раскрытия.
+   ========================================================================== */
+.contact{padding-block:clamp(72px,10vh,132px);background:var(--bg);
+         border-block-start:1px solid var(--line)}
+.contact__grid{display:grid;grid-template-columns:1.05fr .95fr;
+               gap:clamp(40px,6vw,96px);align-items:start}
+
+.contact__h{margin:20px 0 0;font-size:clamp(28px,3.6vw,44px);line-height:1.1;
+            font-weight:600;letter-spacing:-.026em;color:var(--ink)}
+.contact__lead{margin:18px 0 0;font-size:17px;line-height:1.55;
+               color:var(--ink-2);max-width:38ch}
+
+.steps{margin:clamp(30px,4vh,46px) 0 0;padding:0;list-style:none;
+       display:grid;gap:22px}
+.steps li{display:grid;grid-template-columns:auto 1fr;
+          column-gap:16px;row-gap:4px;align-items:start}
+.steps__n{grid-row:1 / span 2;width:32px;height:32px;border-radius:50%;
+          display:grid;place-items:center;
+          border:1px solid rgba(240,168,104,.4);color:var(--accent);
+          font-family:var(--mono);font-size:13px;font-weight:600}
+.steps b{font-size:16.5px;font-weight:600;color:var(--ink);
+         letter-spacing:-.012em}
+.steps em{font-style:normal;font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.contact__where{margin:clamp(28px,4vh,44px) 0 0;font-family:var(--mono);
+                font-size:12.5px;letter-spacing:.08em;color:var(--ink-3)}
+
+/* --- каналы --- */
+.chan{display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+      gap:18px;padding:18px 20px;text-decoration:none;
+      border:1px solid var(--line);border-radius:14px;
+      background:var(--surface);color:var(--ink);
+      transition:border-color .18s, background .18s, transform .18s}
+.chan + .chan{margin-block-start:12px}
+.chan:hover,.chan:focus-visible{border-color:rgba(240,168,104,.5);
+      background:var(--surface-2);transform:translateY(-1px)}
+.chan__i{width:26px;height:26px;flex:none;fill:var(--accent);color:var(--accent)}
+.chan__i--cut{fill:var(--surface)}
+.chan:hover .chan__i--cut{fill:var(--surface-2)}
+.chan__t b{display:block;font-size:16.5px;font-weight:600;letter-spacing:-.012em}
+.chan__t em{display:block;margin-block-start:3px;font-style:normal;
+            font-family:var(--mono);font-size:13px;color:var(--ink-2);
+            word-break:break-word}
+.chan__go{color:var(--accent);font-size:19px;line-height:1;
+          transition:transform .18s}
+.chan:hover .chan__go{transform:translateX(4px)}
+.chan__note{margin:18px 0 0;font-size:14px;line-height:1.5;color:var(--ink-3)}
+
+/* ==========================================================================
+   ФУТЕР
+   ========================================================================== */
+.foot{background:var(--surface);border-block-start:1px solid var(--line);
+      padding-block:clamp(48px,7vh,78px) 26px}
+.foot__top{display:grid;grid-template-columns:1.1fr 1.4fr;
+           gap:clamp(34px,5vw,80px);align-items:start}
+.foot__brand .brand{display:inline-flex}
+.foot__tag{margin:16px 0 0;font-size:15px;line-height:1.55;color:var(--ink-2);
+           max-width:34ch}
+.foot__made{margin:14px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-3);
+            max-width:34ch}
+
+.foot__nav{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.foot__nav h3{margin:0 0 14px;font-family:var(--mono);font-size:11.5px;
+              font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+              color:var(--accent)}
+.foot__nav a{display:block;font-size:15px;padding-block:10px;
+             color:rgba(245,240,232,.78);text-decoration:none}
+.foot__nav a:hover{color:var(--ink);text-decoration:underline;
+                   text-underline-offset:3px}
+
+.foot__bot{margin-block-start:clamp(36px,5vh,56px);
+           padding-block-start:22px;border-block-start:1px solid var(--line);
+           display:flex;flex-wrap:wrap;gap:16px 26px;align-items:center;
+           justify-content:space-between;
+           font-size:13px;color:var(--ink-3)}
+.foot__kavod b{color:var(--accent);font-size:1.15em;margin-inline-end:5px}
+
+@media (max-width:900px){
+  .contact__grid{grid-template-columns:1fr;gap:44px}
+  .contact__lead{max-width:none}
+  .foot__top{grid-template-columns:1fr;gap:36px}
+  .foot__nav{grid-template-columns:repeat(2,1fr);gap:22px 20px}
+  .foot__bot{justify-content:flex-start}
+}
+@media (max-width:560px){
+  .chan{padding:16px;gap:14px}
+  .chan__t em{font-size:12px}
+  .say__kind{font-size:12.5px;letter-spacing:.16em;gap:11px}
+  .steps li{column-gap:13px}
+}
+
+/* ==========================================================================
+   ПРОРИСОВКА ПРОВОДОВ ПО СКРОЛЛУ
+
+   Класс .js-draw ставит сам скрипт: без JS всё видно сразу и ничего
+   не прячется. Полоска провода тянется scaleY от --p, который скрипт
+   пересчитывает по положению кончика. Изгибы и подводы чертятся
+   clip-path'ом — в отличие от scale он не искажает скругления и точку.
+   Отрицательные отступы в inset() нужны, чтобы горящая точка на конце
+   подвода не срезалась: она лежит за пределами своей коробки.
+   ========================================================================== */
+.js-draw .lane{transform-origin:top;transform:scaleY(var(--p,0))}
+
+/* Изгиб к верхней картинке чертится снизу вверх, к нижней — сверху вниз:
+   подвод приходит ровно в середину между ними. */
+.js-draw .br{clip-path:inset(0 0 100% 0);
+             transition:clip-path .6s cubic-bezier(.3,.7,.3,1) .16s}
+.js-draw .br--top{clip-path:inset(100% 0 0 0)}
+.js-draw .node.is-on .br{clip-path:inset(0 0 0 0)}
+
+/* Подвод чертится от провода к картинке. Слева от жгута — справа налево. */
+.js-draw .feed{clip-path:inset(-9px -9px -9px calc(100% + 9px));
+               transition:clip-path .5s cubic-bezier(.3,.7,.3,1) .02s}
+.js-draw .feed--right{clip-path:inset(-9px calc(100% + 9px) -9px -9px)}
+.js-draw .node.is-on .feed{clip-path:inset(-9px -9px -9px -9px)}
+
+/* Картинки проявляются, когда провод до них дочерчен. */
+.js-draw .pic{opacity:0;transform:translateY(18px) scale(.978);
+              transition:opacity .8s ease .46s,
+                         transform .8s cubic-bezier(.22,.72,.2,1) .46s}
+.js-draw .node--eyes .pic{transition-delay:.70s}
+.js-draw .node--eyes .pic + .pic{transition-delay:.86s}
+.js-draw .node.is-on .pic{opacity:1;transform:none}
+
+/* Последний провод: S-изгиб и хвост чертятся сверху вниз, следом
+   проявляется коробка, следом тезисы вокруг неё. */
+.js-draw .wire-s,.js-draw .drop{clip-path:inset(0 0 100% 0);
+  transition:clip-path .45s cubic-bezier(.3,.7,.3,1)}
+.js-draw .wire-s--b{transition-delay:.14s}
+.js-draw .drop{transition-delay:.26s;transition-duration:.6s}
+.js-draw .node.is-on .wire-s,.js-draw .node.is-on .drop{clip-path:inset(0 0 0 0)}
+
+.js-draw .claims li{opacity:0;transform:translateY(14px);
+  transition:opacity .7s ease .86s, transform .7s cubic-bezier(.22,.72,.2,1) .86s}
+.js-draw .claims li + li{transition-delay:.98s}
+.js-draw .node.is-on .claims li{opacity:1;transform:none}
+
+@media (max-width:900px){
+  /* Жгут стоит справа, поэтому все подводы чертятся справа налево. */
+  .js-draw .feed--right{clip-path:inset(-9px -9px -9px calc(100% + 9px))}
+}
+@media (prefers-reduced-motion:reduce){
+  .js-draw .lane{transform:none}
+  .js-draw .br,.js-draw .feed,.js-draw .wire-s,.js-draw .drop{clip-path:none}
+  .js-draw .pic,.js-draw .claims li{opacity:1;transform:none;transition:none}
+}
+
+/* ==========================================================================
+   ПОЯВЛЕНИЕ ПО СКРОЛЛУ
+   Направление совпадает с тем, откуда читатель пришёл: листаем вниз —
+   элемент приходит сверху; листаем вверх — приходит снизу.
+   Работает только если JS выполнился: класс .js ставит сам скрипт,
+   иначе всё видно сразу и ничего не прячется.
+   ========================================================================== */
+.js .reveal{opacity:0;will-change:opacity,transform;
+  transition:opacity .66s ease, transform .66s cubic-bezier(.22,.72,.2,1)}
+.js .reveal--down{transform:translateY(-30px)}   /* пришли сверху */
+.js .reveal--up{transform:translateY(30px)}      /* пришли снизу  */
+.js .reveal.is-in{opacity:1;transform:none}
+.js .reveal[data-delay="1"]{transition-delay:.08s}
+.js .reveal[data-delay="2"]{transition-delay:.16s}
+.js .reveal[data-delay="3"]{transition-delay:.24s}
+.js .reveal[data-delay="4"]{transition-delay:.32s}
+
+@media (prefers-reduced-motion:reduce){
+  .js .reveal{opacity:1;transform:none;transition:none}
+}

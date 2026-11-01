@@ -1,0 +1,107 @@
+name: Care Monitor
+version: "2.6.0"
+slug: care_monitor
+description: "Журнал наблюдения за пожилым человеком: Frigate -> MQTT -> цепочка запросов к VLM (Ollama) -> SQLite. Копит размеченный набор для дообучения модели."
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+boot: auto
+map:
+  - type: share
+    read_only: false
+options:
+  target_identity: "Grandfather"
+  target_description: "пожилой мужчина, седой, худощавый"
+  cameras: ""
+  frigate_url: "http://FRIGATE_HOST:5000"
+  attribute_field: "person_by_appearance"
+  mqtt_host: "core-mosquitto"
+  mqtt_port: 1883
+  mqtt_user: ""
+  mqtt_password: ""
+  vlm_url: "http://OLLAMA_HOST_IP:11434"
+  vlm_model: "qwen3-vl:4b-instruct"
+  vlm_validate_model: ""
+  vlm_context: 32768
+  vlm_timeout: 300
+  frames_per_event: 12
+  frame_width: 1280
+  frame_mode: "crop"
+  crop_pad: 30
+  crop_pad_min: 0.03
+  crop_min: 0.22
+  wide_frames: 8
+  preview: true
+  preview_width: 854
+  preview_crf: 30
+  preview_preset: "veryfast"
+  clip_tries: 3
+  clip_retry_wait: 15
+  step_frames: 6
+  validate_subject: true
+  validate_frames: 5
+  steps_off: ""
+  moving_min_path: 0.06
+  queue_size: 50          # порог предупреждения о заторе, не предел стека
+  lookback: true
+  lookback_hours: 24
+  zone_names: '{"bad":"кровать","badroom":"спальня","kitchen":"кухня","livingroom":"зал","sofa":"диван","toilet_enter":"вход в туалет","yard":"двор","home":"дом","Exit":"выход со двора"}'
+  camera_zones: '{"ezviz_e6":["bad","badroom","kitchen"],"ezviz_h3":["home","yard","Exit"],"tapo_c222":["toilet_enter","livingroom","kitchen","sofa"]}'
+  exit_zones: '["Exit"]'
+  bed_zones: '["bad"]'
+  sofa_zones: '["sofa"]'
+  sleep_room_zones: '["badroom","livingroom"]'
+  toilet_zones: '["toilet_enter"]'
+  danger_still_minutes: 30
+  retention_days: 3       # сколько суток хранить события и видео; 0 — не удалять
+  log_level: "INFO"
+  log_heartbeat_min: 10
+schema:
+  target_identity: str
+  target_description: str
+  cameras: str
+  frigate_url: url
+  attribute_field: str
+  mqtt_host: str
+  mqtt_port: port
+  mqtt_user: str
+  mqtt_password: password
+  vlm_url: url
+  vlm_model: str
+  vlm_validate_model: str?
+  vlm_context: int(2048,131072)
+  vlm_timeout: int(10,900)
+  frames_per_event: int(1,24)
+  frame_width: int(0,3840)
+  frame_mode: list(crop|scale)
+  crop_pad: int(0,200)
+  crop_pad_min: float
+  crop_min: float
+  wide_frames: int(0,24)
+  preview: bool
+  preview_width: int(320,1920)
+  preview_crf: int(18,40)
+  preview_preset: list(ultrafast|superfast|veryfast|faster|fast|medium)
+  clip_tries: int(1,10)
+  clip_retry_wait: int(0,120)
+  step_frames: int(1,24)
+  validate_subject: bool
+  validate_frames: int(1,24)
+  steps_off: str
+  moving_min_path: float
+  queue_size: int(1,500)
+  lookback: bool
+  lookback_hours: int(1,720)
+  zone_names: str
+  camera_zones: str
+  exit_zones: str
+  bed_zones: str
+  sofa_zones: str
+  sleep_room_zones: str
+  toilet_zones: str
+  danger_still_minutes: int(1,600)
+  retention_days: int(0,365)
+  log_level: list(DEBUG|INFO|WARNING|ERROR)
+  log_heartbeat_min: int(1,120)

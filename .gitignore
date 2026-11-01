@@ -13,6 +13,8 @@ secrets.yaml
 config.yaml
 !config.example.yaml
 !frigate/config.example.yaml
+# манифесты аддонов Home Assistant: секретов в них нет, пароли задаются в UI
+!services/*/config.yaml
 cloudflared-config.yml
 credentials.json
 *credentials*.json

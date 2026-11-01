@@ -1,0 +1,43 @@
+name: Care Journal API
+version: "2.5.0"
+slug: care_api
+description: "API журнала наблюдения: лента событий для сайта, оценка верно/ложно с правкой, переоценка, статистика, выгрузка набора для дообучения."
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: auto
+init: false
+ports:
+  8092/tcp: 8092
+watchdog: "http://[HOST]:[PORT:8092]/api/health"
+map:
+  - share:rw
+options:
+  port: 8092
+  db_path: "/share/care_monitor/monitor.db"
+  data_dir: "/share/care_monitor/events"
+  demo_db_path: "/share/care_demo/demo.db"
+  demo_data_dir: "/share/care_demo/events"
+  owner_login: ""
+  owner_password: ""
+  owner_name: "owner"
+  session_secret: ""
+  allowed_origin: "*"
+  cookie_secure: false
+  frigate_url: "http://FRIGATE_HOST:5000"
+  vlm_url: "http://OLLAMA_HOST_IP:11434"
+schema:
+  port: int
+  db_path: str
+  data_dir: str
+  demo_db_path: str
+  demo_data_dir: str
+  owner_login: str
+  owner_password: password
+  owner_name: str
+  session_secret: password
+  allowed_origin: str
+  cookie_secure: bool
+  frigate_url: url
+  vlm_url: url
