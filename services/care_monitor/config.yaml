@@ -1,5 +1,5 @@
 name: Care Monitor
-version: "2.6.0"
+version: "2.7.0"
 slug: care_monitor
 description: "Журнал наблюдения за пожилым человеком: Frigate -> MQTT -> цепочка запросов к VLM (Ollama) -> SQLite. Копит размеченный набор для дообучения модели."
 arch:
@@ -22,7 +22,10 @@ options:
   mqtt_user: ""
   mqtt_password: ""
   vlm_url: "http://OLLAMA_HOST_IP:11434"
+  vlm_backend: "qwen"
   vlm_model: "qwen3-vl:4b-instruct"
+  vlm_llama_model: "llama3.2-vision:11b"
+  grid_width: 1120
   vlm_validate_model: ""
   vlm_context: 32768
   vlm_timeout: 300
@@ -69,7 +72,10 @@ schema:
   mqtt_user: str
   mqtt_password: password
   vlm_url: url
+  vlm_backend: list(qwen|llama)
   vlm_model: str
+  vlm_llama_model: str
+  grid_width: int(448,2240)
   vlm_validate_model: str?
   vlm_context: int(2048,131072)
   vlm_timeout: int(10,900)

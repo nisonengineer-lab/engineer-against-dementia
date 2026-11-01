@@ -14,7 +14,7 @@ import urllib.request
 import config
 from frigate.geometry import event_geometry
 
-from . import crop, preview
+from . import crop, grid, preview
 from .steps import (CHAIN, VALIDATE, is_moving, lying_place_where,
                     toilet_by_zone, zone_name)
 
@@ -67,8 +67,10 @@ class EventAnalyzer:
         self.stopping = False
         self.thread = threading.Thread(target=self._loop, daemon=True)
         self.thread.start()
+        model = (f"{config.VLM_LLAMA_MODEL} (llama, кадры склеиваются в сетку)"
+                 if config.VLM_BACKEND == "llama" else config.VLM_MODEL)
         log.info("разбор запущен: %s, %d эталонных фото, %d шагов в цепочке",
-                 config.VLM_MODEL, len(self.reference), len(CHAIN) + 1)
+                 model, len(self.reference), len(CHAIN) + 1)
 
     def stop(self):
         self.stopping = True
@@ -463,21 +465,21 @@ class EventAnalyzer:
                 frames = whole
         if chosen is None:
             chosen = self._pick(frames, step.frames)
-        prompt = self.prompts[step.name].replace(
-            "{{CONTEXT}}", self._context(person, step, card, len(chosen)))
+        refs = self.reference if step.reference else []
+        images, prompt = self._request(step, person, card, refs, chosen)
         with open(os.path.join(folder, f"prompt_{step.name}{tag}.txt"),
                   "w", encoding="utf-8") as f:
             f.write(prompt)
 
-        images = ([self._encode(p) for p in self.reference] if step.reference else [])
         model = self._model_for(step)
-        log.info("%s: ЗАПРОС «%s» — %d кадров%s%s",
+        log.info("%s: ЗАПРОС «%s» — %d кадров%s%s%s",
                  short, step.title, len(chosen),
-                 f" + {len(images)} эталонов" if images else "",
+                 f" + {len(refs)} эталонов" if refs else "",
+                 ", склеены в одну картинку" if self._one_image() else "",
                  f", модель {model}" if model != config.VLM_MODEL else "")
 
         began = time.time()
-        answer = self._ask(prompt, images + [self._encode(f) for f in chosen], model)
+        answer = self._ask(prompt, images, model)
 
         # Не влезло в окно модели — это не повод терять событие целиком.
         # Показываем половину кадров и спрашиваем снова: ответ по шести кадрам
@@ -487,10 +489,8 @@ class EventAnalyzer:
             chosen = self._thin(chosen)
             log.warning("%s: «%s» не влезло в контекст — повторяю на %d кадрах",
                         short, step.title, len(chosen))
-            prompt = self.prompts[step.name].replace(
-                "{{CONTEXT}}", self._context(person, step, card, len(chosen)))
-            answer = self._ask(prompt, images + [self._encode(f) for f in chosen],
-                               model)
+            images, prompt = self._request(step, person, card, refs, chosen)
+            answer = self._ask(prompt, images, model)
 
         spent = round(time.time() - began, 1)
         if answer is None:
@@ -614,9 +614,33 @@ class EventAnalyzer:
     # ---------- кадры и контекст ----------
 
     @staticmethod
+    def _one_image():
+        """Llama 3.2 Vision в Ollama берёт одно изображение на запрос —
+        кадры для неё склеиваются в сетку (vlm/grid.py)."""
+        return config.VLM_BACKEND == "llama"
+
+    def _request(self, step, person, card, refs, chosen):
+        """Картинки и текст запроса. Для Qwen — кадры по одному, эталоны
+        первыми; для Llama — одна сетка, а в промпте сказано, как её читать."""
+        if self._one_image():
+            image, shape = grid.build(refs, chosen)
+            layout_line = grid.context_line(len(refs), len(chosen), shape)
+            images = [image]
+        else:
+            layout_line = None
+            images = [self._encode(p) for p in refs] + [self._encode(f) for f in chosen]
+        prompt = self.prompts[step.name].replace(
+            "{{CONTEXT}}", self._context(person, step, card, len(chosen), layout_line))
+        return images, prompt
+
+    @staticmethod
     def _model_for(step):
         """Опознание отдаём тяжёлой модели, если она задана: 4b на этом вопросе
-        не работает. Остальные шаги — быстрой, им хватает."""
+        не работает. Остальные шаги — быстрой, им хватает.
+
+        В режиме llama модель одна на все шаги: своей «тяжёлой» у неё нет."""
+        if config.VLM_BACKEND == "llama":
+            return config.VLM_LLAMA_MODEL
         if step.heavy and config.VLM_VALIDATE_MODEL:
             return config.VLM_VALIDATE_MODEL
         return config.VLM_MODEL
@@ -653,10 +677,12 @@ class EventAnalyzer:
         step = (len(frames) - 1) / (count - 1)
         return [frames[round(i * step)] for i in range(count)]
 
-    def _context(self, person, step, card, scene_frames):
+    def _context(self, person, step, card, scene_frames, layout_line=None):
         part = self._day_part(person)
         lines = []
-        if step.reference:
+        if layout_line:
+            lines.append(layout_line)
+        elif step.reference:
             lines.append(f"СОСТАВ КАДРОВ: первых кадров эталонных — "
                          f"{len(self.reference)}, дальше {scene_frames} кадров "
                          f"сцены по порядку времени")

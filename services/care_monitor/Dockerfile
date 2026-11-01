@@ -2,9 +2,10 @@
 FROM ghcr.io/home-assistant/base:latest
 
 # ffmpeg режет видео события на кадры.
+# py3-pillow склеивает кадры в одну картинку для Llama 3.2 Vision (vlm/grid.py).
 # tzdata обязателен: без него Alpine игнорирует TZ и всё живёт в UTC —
 # время событий уезжало бы на три часа относительно израильского.
-RUN apk add --no-cache python3 py3-pip ffmpeg tzdata \
+RUN apk add --no-cache python3 py3-pip py3-pillow ffmpeg tzdata \
     && pip3 install --no-cache-dir --break-system-packages "paho-mqtt>=2.0"
 
 COPY run.py        /app/run.py

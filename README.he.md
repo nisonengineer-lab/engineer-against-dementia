@@ -9,7 +9,9 @@
 ![Status](https://img.shields.io/badge/status-in__development-orange)
 ![Self-hosted](https://img.shields.io/badge/self--hosted-100%25-green)
 
-[Русский](README.md) · [English](README.en.md) · [עברית](README.he.md)
+[English](README.md) · [Русский](README.ru.md) · [עברית](README.he.md)
+
+🌐 **[אתר](https://engineeragainstdementia.net)** · 📓 **[הדגמת היומן](https://engineeragainstdementia.net/demo/)** · [יומן המשפחה](https://engineeragainstdementia.net/journal/) · [מצב המערכת](https://engineeragainstdementia.net/status/) · [קוד האתר](https://github.com/nisonengineer-lab/engineer-against-dementia.net)
 
 </div>
 
@@ -73,7 +75,7 @@ flowchart LR
         end
 
         subgraph WIN["PC with GPU"]
-            OLLAMA["Ollama<br/>Qwen3-VL"]
+            OLLAMA["Ollama<br/>Qwen3-VL / Llama 3.2 Vision"]
         end
 
         CAM1 --> FRIGATE
@@ -110,7 +112,7 @@ flowchart LR
 | אוטומציה | [Home Assistant](https://www.home-assistant.io/) OS ב-VM |
 | אפיק אירועים | `Mosquitto MQTT` |
 | התראות | `Telegram Bot API` + `HA Companion` push |
-| Vision-LLM | `Ollama` + `Qwen3-VL 8B` על GPU נפרד |
+| Vision-LLM | `Ollama` על GPU נפרד: `Qwen3-VL 4B` (ברירת מחדל) או `Llama 3.2 Vision 11B` של Meta — מתג בהגדרות התוסף (`vlm_backend`). Llama מקבלת תמונה אחת בכל בקשה, ולכן הפריימים מודבקים לרשת אחת |
 | גישה מבחוץ | `Cloudflare Tunnel` |
 | חיישנים ללא מצלמה | `Seeed MR60FDA2` (60 GHz mmWave) דרך `ESPHome` |
 
@@ -122,7 +124,7 @@ flowchart LR
 frigate/        NVR config: cameras, zones, detection thresholds
 homeassistant/  automations and alerting rules
 models/         YOLOv9 build to ONNX
-services/       vision-LLM and helper services
+services/       Care Monitor and Care Journal API add-ons, demo journal, vision tests
 ops/            health-check, systemd, tunnel — what keeps the system alive
 docs/           documentation (ru / en / he)
 site/           project website

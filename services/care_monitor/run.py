@@ -19,7 +19,7 @@ import shutil
 import time
 import urllib.request
 
-VERSION = "2.6.0"
+VERSION = "2.7.0"
 SHARE = "/share/care_monitor"
 OPTIONS = "/data/options.json"
 
@@ -87,6 +87,10 @@ env.update({
 
     "VLM_URL":              str(options.get("vlm_url", "")),
     "VLM_MODEL":            str(options.get("vlm_model", "qwen3-vl:4b-instruct")),
+    # Переключатель модели: qwen — кадры по одному, llama — склеенная сетка.
+    "VLM_BACKEND":          str(options.get("vlm_backend", "qwen")),
+    "VLM_LLAMA_MODEL":      str(options.get("vlm_llama_model", "llama3.2-vision:11b")),
+    "GRID_WIDTH":           str(options.get("grid_width", 1120)),
     "VLM_VALIDATE_MODEL":   str(options.get("vlm_validate_model", "")),
     "VLM_CONTEXT":          str(options.get("vlm_context", 16384)),
     "VLM_TIMEOUT":          str(options.get("vlm_timeout", 300)),
@@ -163,6 +167,6 @@ if references == 0:
           f"Модель будет узнавать человека только по описанию", flush=True)
 
 print(f"[run] Care Monitor {VERSION}: цель={env['TARGET_IDENTITY']} "
-      f"модель={env['VLM_MODEL']} эталонов={references} база={env['DB_PATH']}", flush=True)
+      f"модель={env['VLM_LLAMA_MODEL'] + ' (llama)' if env['VLM_BACKEND'] == 'llama' else env['VLM_MODEL']} эталонов={references} база={env['DB_PATH']}", flush=True)
 
 os.execvpe("python3", ["python3", "/app/main.py"], env)

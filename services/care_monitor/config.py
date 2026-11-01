@@ -79,6 +79,18 @@ QUEUE_SIZE = _number("QUEUE_SIZE", 50)
 # --- VLM ---
 VLM_URL = _text("VLM_URL", "http://OLLAMA_HOST_IP:11434")
 VLM_MODEL = _text("VLM_MODEL", "qwen3-vl:4b-instruct")   # 8b тут не тянет: >100 с на событие
+
+# Какая модель смотрит кадры: qwen или llama.
+#   qwen  — VLM_MODEL (и VLM_VALIDATE_MODEL на проверку), кадры идут по одному.
+#   llama — VLM_LLAMA_MODEL (Llama 3.2 Vision от Meta) на все шаги. Она берёт
+#           одно изображение на запрос, поэтому кадры склеиваются в сетку
+#           шириной GRID_WIDTH (vlm/grid.py). Медленнее и мельче, зато модель
+#           открытая и её можно дообучить своими разметками.
+VLM_BACKEND = _text("VLM_BACKEND", "qwen").strip().lower()
+VLM_LLAMA_MODEL = _text("VLM_LLAMA_MODEL", "llama3.2-vision:11b")
+# Llama сама ужимает картинку примерно до 1120 по большей стороне — шире
+# сетку собирать незачем.
+GRID_WIDTH = _number("GRID_WIDTH", 1120)
 # Считано на qwen3-vl:4b: текст промпта ~480 токенов, а ОДИН кадр 640x360 —
 # 1077. Запрос проверки (12 кадров + 3 эталона) весит ~16.6к, и в 16384 он не
 # влезал. Картинки — 97% запроса, укорачивание промптов тут не помогает.
