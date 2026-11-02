@@ -12,8 +12,6 @@ env = os.environ.copy()
 env.update({
     "DB_PATH":        str(options.get("db_path", "/share/care_monitor/monitor.db")),
     "DATA_DIR":       str(options.get("data_dir", "/share/care_monitor/events")),
-    "DEMO_DB_PATH":   str(options.get("demo_db_path", "/share/care_demo/demo.db")),
-    "DEMO_DATA_DIR":  str(options.get("demo_data_dir", "/share/care_demo/events")),
     "PORT":           str(options.get("port", 8092)),
     "OWNER_LOGIN":    str(options.get("owner_login", "")),
     "OWNER_PASSWORD": str(options.get("owner_password", "")),

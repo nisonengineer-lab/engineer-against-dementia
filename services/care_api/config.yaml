@@ -17,8 +17,6 @@ options:
   port: 8092
   db_path: "/share/care_monitor/monitor.db"
   data_dir: "/share/care_monitor/events"
-  demo_db_path: "/share/care_demo/demo.db"
-  demo_data_dir: "/share/care_demo/events"
   owner_login: ""
   owner_password: ""
   owner_name: "owner"
@@ -31,8 +29,6 @@ schema:
   port: int
   db_path: str
   data_dir: str
-  demo_db_path: str
-  demo_data_dir: str
   owner_login: str
   owner_password: password
   owner_name: str

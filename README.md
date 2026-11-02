@@ -128,7 +128,7 @@ Component breakdown: [docs/en/01-architecture.md](docs/en/01-architecture.md)
 frigate/        NVR config: cameras, zones, detection thresholds
 homeassistant/  automations and alerting rules
 models/         YOLOv9 build to ONNX
-services/       Care Monitor and Care Journal API add-ons, demo journal, vision tests
+services/       Care Monitor and Care Journal API add-ons, vision tests
 ops/            health check, systemd, tunnel — the things that keep the system alive
 docs/           documentation (ru / en / he)
 site/           project website

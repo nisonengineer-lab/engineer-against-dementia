@@ -127,7 +127,7 @@ flowchart LR
 frigate/        конфиг NVR: камеры, зоны, пороги детекции
 homeassistant/  автоматизации и правила оповещений
 models/         сборка YOLOv9 в ONNX
-services/       аддоны Care Monitor и Care Journal API, демо-журнал, тесты vision-модели
+services/       аддоны Care Monitor и Care Journal API, тесты vision-модели
 ops/            health-check, systemd, туннель — то, что держит систему живой
 docs/           документация (ru / en / he)
 site/           сайт проекта

@@ -863,11 +863,6 @@ def dataset():
     return Response("\n".join(lines), mimetype="application/x-ndjson")
 
 
-# Демо-журнал (/demo, /demo/api/...): своя база и свои ролики, см. demo_api.py.
-from demo_api import demo  # noqa: E402
-app.register_blueprint(demo)
-
-
 if __name__ == "__main__":
     print(f"[api] Care Journal API на порту {PORT}, база {config.DB_PATH}, "
           f"вход {'по паролю' if OWNER_PASSWORD else 'выключен (все — владельцы)'}",
